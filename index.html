@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz do Aniversário</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a2e);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(138, 43, 226, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 400px;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.3);
+            position: relative;
+            z-index: 1;
+            transition: all 0.5s ease;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(138, 43, 226, 0.5);
+        }
+
+        h2 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 16px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        input::placeholder {
+            color: #ccc;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            background: linear-gradient(45deg, #8a2be2, #4169e1);
+            color: #fff;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.5);
+        }
+
+        .option {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            margin: 5px 0;
+        }
+
+        .option.correct {
+            background: #28a745;
+        }
+
+        .option.wrong {
+            background: #dc3545;
+        }
+
+        .timer-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .timer-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8a2be2, #4169e1);
+            width: 100%;
+            transition: width 1s linear;
+        }
+
+        .score {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+
+        img {
+            max-width: 100%;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .final-message {
+            font-size: 20px;
+            line-height: 1.5;
+            margin: 20px 0;
+        }
+
+        .confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .confetti div {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            animation: fall 3s linear infinite;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            h2 {
+                font-size: 1.3em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Tela Inicial -->
+        <div id="start" class="screen active">
+            <h1>Quiz do Aniversário</h1>
+            <img src="foto.jpg" alt="Foto do aniversariante">
+            <input id="nome" placeholder="Digite seu nome" type="text">
+            <button onclick="startGame()">Começar</button>
+        </div>
+
+        <!-- Tela do Jogo -->
+        <div id="game" class="screen">
+            <h2 id="question"></h2>
+            <div class="timer-bar">
+                <div id="timer-fill" class="timer-fill"></div>
+            </div>
+            <div id="options"></div>
+            <div class="score">Pontos: <span id="score">0</span>/5</div>
+        </div>
+
+        <!-- Tela Final -->
+        <div id="final" class="screen">
+            <h1>🎉 Parabéns! 🎉</h1>
+            <img src="foto.jpg" alt="Foto do aniversariante">
+            <div class="score">Pontuação Final: <span id="final-score">0</span>/5</div>
+            <div id="final-message" class="final-message"></div>
+            <button onclick="restartGame()">Jogar Novamente</button>
+            <div class="confetti" id="confetti"></div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                q: "Quem teve a força no cabelo?",
+                o: ["Moisés", "Davi", "Sansão", "Pedro"],
+                r: "Sansão"
+            },
+            {
+                q: "Quem fez o primeiro milagre gastronômico da história?",
+                o: ["Paulo", "Jesus", "Noé", "Abraão"],
+                r: "Jesus"
+            },
+            {
+                q: "Quem virou estátua por curiosidade?",
+                o: ["Maria", "Eva", "Mulher de Ló", "Sara"],
+                r: "Mulher de Ló"
+            },
+            {
+                q: "Marca de carro mais gay que um homem pode ter",
+                o: ["Toyota", "BYD", "Volkswagen", "Fiat"],
+                r: "BYD"
+            },
+            {
+                q: "Quem é mais bonito?",
+                o: ["Pablo", "Silas", "Johan"],
+                r: "Pablo"
+            }
+        ];
+
+        let current = 0;
+        let score = 0;
+        let name = "";
+        let timerInterval;
+        let musicInterval;
+        let ctx;
+
+        function initAudio() {
+            if (!ctx) {
+                ctx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playTone(freq, time) {
+            if (!ctx) return;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.value = freq;
+            osc.start();
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + time);
+            osc.stop(ctx.currentTime + time);
+        }
+
+        function playCorrect() {
+            initAudio();
+            playTone(600, 0.2);
+            setTimeout(() => playTone(800, 0.2), 200);
+        }
+
+        function playWrong() {
+            initAudio();
+            playTone(200, 0.5);
+        }
+
+        function startMusic() {
+            if (musicInterval) clearInterval(musicInterval);
+            musicInterval = setInterval(() => {
+                initAudio();
+                // Simples melodia gospel-like
+                playTone(261.63, 0.3); // C
+                setTimeout(() => playTone(329.63, 0.3), 300); // E
+                setTimeout(() => playTone(392, 0.3), 600); // G
+            }, 2000);
+        }
+
+        function stopMusic() {
+            if (musicInterval) {
+                clearInterval(musicInterval);
+                musicInterval = null;
+            }
+        }
+
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = "pt-BR";
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        function startGame() {
+            name = document.getElementById("nome").value.trim() || "Amigo";
+            document.getElementById("start").classList.remove("active");
+            document.getElementById("game").classList.add("active");
+            startMusic();
+            speak(`Bem vindo, ${name}`);
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const q = questions[current];
+            document.getElementById("question").textContent = q.q;
+            document.getElementById("options").innerHTML = "";
+            q.o.forEach(op => {
+                const btn = document.createElement("button");
+                btn.textContent = op;
+                btn.className = "option";
+                btn.onclick = () => answer(op, btn);
+                document.getElementById("options").appendChild(btn);
+            });
+            startTimer();
+        }
+
+        function startTimer() {
+            const fill = document.getElementById("timer-fill");
+            fill.style.width = "100%";
+            let time = 10;
+            timerInterval = setInterval(() => {
+                time -= 0.1;
+                fill.style.width = (time / 10) * 100 + "%";
+                if (time <= 0) {
+                    clearInterval(timerInterval);
+                    answer(null); // Tempo esgotado
+                }
+            }, 100);
+        }
+
+        function answer(resp, btn) {
+            clearInterval(timerInterval);
+            const correct = questions[current].r;
+            const buttons = document.querySelectorAll("#options button");
+
+            buttons.forEach(b => {
+                b.disabled = true;
+                if (b.textContent === correct) {
+                    b.classList.add("correct");
+                } else if (b === btn && resp !== correct) {
+                    b.classList.add("wrong");
+                }
+            });
+
+            if (resp === correct) {
+                score++;
+                document.getElementById("score").textContent = score;
+                playCorrect();
+                speak("Acertou!");
+            } else {
+                playWrong();
+                speak("Errou!");
+            }
+
+            current++;
+            setTimeout(() => {
+                if (current < questions.length) {
+                    showQuestion();
+                } else {
+                    endGame();
+                }
+            }, 2000);
+        }
+
+        function endGame() {
+            stopMusic();
+            document.getElementById("game").classList.remove("active");
+            document.getElementById("final").classList.add("active");
+            document.getElementById("final-score").textContent = score;
+            document.getElementById("final-message").textContent = 
+                `FALAAAA ${name}, passando pra te desejar um feliz aniversário, que esse ano seja incrível pra tu, que Deus te ilumine sempre 🙌`;
+            speak(`Parabéns, ${name}!`);
+
+            // Confete
+            for (let i = 0; i < 60; i++) {
+                const conf = document.createElement("div");
+                conf.style.left = Math.random() * 100 + "%";
+                conf.style.background = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                conf.style.animationDuration = (Math.random() * 3 + 2) + "s";
+                document.getElementById("confetti").appendChild(conf);
+            }
+        }
+
+        function restartGame() {
+            current = 0;
+            score = 0;
+            document.getElementById("score").textContent = score;
+            document.getElementById("final-score").textContent = score;
+            document.getElementById("confetti").innerHTML = "";
+            document.getElementById("final").classList.remove("active");
+            document.getElementById("start").classList.add("active");
+            stopMusic();
+        }
+    </script>
+</body>
+</html>
